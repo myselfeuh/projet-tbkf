@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title> Classement RBG FR</title>
+  
+	<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js'></script>
+	<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
+
+<script type="text/javascript">
+
+// initialisation du serveur qui sera choisi via la listbox
+var chosenRealm = null;
+
+// recensement des serveurs fr
+var realmFr = new Array("Arak-arahm", "Arathi ", "Archimonde", "Chants éternels", "Cho’gall", "Confrérie du Thorium", " Conseil des Ombres", 
+						"Dalaran", "Drek'Thar", "Eitrigg", "Eldre'Thalas", "Elune", "Garona", "Hyjal", "Illidan", "Kael'thas", "Khaz Modan", "Kirin Tor", 
+						"Krasus", "La Croisade écarlate", "Les Clairvoyants", "Les Sentinelles", "Marécage de Zangar", "Medivh", "Naxxramas", "Ner’zhul", "Rashgarroth", 
+						"Sargeras", "Sinstralis", "Temple noir", "Throk'Feroth", "Uldaman", "Varimathras", "Vol'jin", "Ysondre");
+						
+// affichage du contenu dans la listbox choix de serveur
+function realmChoice() {
+    for(i=0;i<realmFr.length;i++){
+    var select = document.getElementById("realmList");
+	select.options[select.options.length] = new Option(realmFr[i], realmFr[i]);
+    }
+}
+
+// fonction déclenchée par la validation du choix d'un serveur (bouton valider)
+/*
+elle récupère le choix de serveur, 
+puis l'enregistre dans la variable globale "chosenRealm,
+puis supprime le contenu du tableau,
+puis remplit à nouveau le tableau (en appelant la fonction table())
+*/
+function validate(){
+// récupération de l'élément choisi dans la listbox
+	var e = document.getElementById("realmList");
+// récupération du nom de l'élément choisi dans la listbox, qu'on mettra dans la variable globale "chosenRealm"
+	chosenRealm = e.options[e.selectedIndex].text;
+// on supprime le contenu du tableau
+	$("#classements tr").remove(); 
+// on appelle la fonction de création du tableau
+	table();
+}
+
+//<![CDATA[ 
+// script qui se lance dès le chargement de la page
+$(window).load(table());//]]>  
+
+// fonction de création du tableau
+function table(){
+// récupérations des données de l'api blizzard
+	$.getJSON("http://eu.battle.net/api/wow/leaderboard/rbg" + "?callback=?", null, function( data ) {
+// compteur d'itérations pour obtenir le classement
+		var classement = 0;
+// affichage des données récupérées dans le tableau html "classements"
+		$(data.rows).each(function() {
+			if (realmFr.indexOf(this.realmName) !== -1) {
+				if (chosenRealm == null) {
+					classement++;
+					var output = "<tr><td>" + classement + "</td><td>" + this.ranking + "</td><td>" + this.rating + "</td><td>" + this.name+ "</td><td>"+ this.realmName +"</td></tr>";
+					$('#classements').append(output);
+				}
+				else if (this.realmName == chosenRealm) {
+					classement++;
+					var output = "<tr><td>" + classement + "</td><td>" + this.ranking + "</td><td>" + this.rating + "</td><td>" + this.name+ "</td><td>"+ this.realmName +"</td></tr>";
+					$('#classements').append(output);
+				}
+			}
+		});
+	})
+// fonctions de Jquery pour la gestion d'erreur lors de la récupérations des données de l'api
+	//.done(function() { alert('getJSON request succeeded!'); })
+	.fail(function(jqXHR, textStatus, errorThrown) { alert('getJSON request failed! ' + textStatus); })
+	//.always(function() { alert('getJSON request ended!'); });
+}
+
+</script>
+</head>
+
+<body onload="realmChoice();">
+
+<select id="realmList" onChange="realmChosen()";>
+<option>-- Choisissez un serveur ---</option>
+</select>
+
+<input type="button" name="SubmitButton" value="Valider" onClick="validate()"> 
+
+<table id="classements" border="2" class="table table-hover">
+<tr><td>Classement FR</td><td>Classement EU</td><td>Cote</td><td>Nom</td><td>Serveur</td></tr>
+</table>
+
+</body>
+</html>
