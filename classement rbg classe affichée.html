@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title> Classement RBG FR</title>
+  
+	<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js'></script>
+	<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
+
+<script type="text/javascript">
+
+
+
+// initialisation du serveur qui sera choisi via la listbox
+var chosenRealm = null;
+
+var realmList;
+
+// recensement des serveurs français
+var realmFr = new Array("Arak-arahm", "Arathi ", "Archimonde", "Chants éternels", "Cho’gall", "Confrérie du Thorium", " Conseil des Ombres", 
+						"Dalaran", "Drek'Thar", "Eitrigg", "Eldre'Thalas", "Elune", "Garona", "Hyjal", "Illidan", "Kael'thas", "Khaz Modan", "Kirin Tor", 
+						"Krasus", "La Croisade écarlate", "Les Clairvoyants", "Les Sentinelles", "Marécage de Zangar", "Medivh", "Naxxramas", "Ner’zhul", "Rashgarroth", 
+						"Sargeras", "Sinstralis", "Temple noir", "Throk'Feroth", "Uldaman", "Varimathras", "Vol'jin", "Ysondre");
+
+// recensement des serveurs espagnols
+var realmSp = new Array("C'Thun", "Colinas Pardas", "Dun Modr", "Exodar", "Los Errantes", "Minahonda", "Sanguino", "Shen'dralar", "Tyrande", "Uldum", "Zul'jin");
+
+// permet de convertir la variable specId reçue par l'api blizzard en nom de spécialisation
+function specialisation(sId){
+	var specName;
+	var className;
+	var specId = sId;
+	
+	switch (specId) {
+		case 62 : specName = "Arcane"; className = "Mage"; break;
+		case 63 : specName = "Feu"; className = "Mage"; break;
+		case 64 : specName = "Givre"; className = "Mage"; break;
+		case 65 : specName = "Sacre"; className = "Paladin"; break;
+		case 66 : specName = "Protection"; className = "Paladin"; break;
+		case 70 : specName = "Vindicte"; className = "Paladin"; break;
+		case 71 : specName = "Armes"; className = "Guerrier"; break;
+		case 72 : specName = "Furie"; className = "Guerrier";break;
+		case 73 : specName = "Protection"; className = "Guerrier"; break;
+		case 102 : specName = "Equilibre"; className = "Druide"; break;
+		case 103 : specName = "Feral"; className = "Druide"; break;
+		case 104 : specName = "Guardien"; className = "Druide"; break;
+		case 105 : specName = "Restauration"; className = "Druide"; break;
+		case 250 : specName = "Sang"; className = "Chevalier de la mort"; break;
+		case 251 : specName = "Givre"; className = "Chevalier de la mort"; break;
+		case 252 : specName = "Impie"; className = "Chevalier de la mort"; break;
+		case 253 : specName = "Maitrise des betes"; className = "Chasseur"; break;
+		case 254 : specName = "Precision"; className = "Chasseur"; break;
+		case 255 : specName = "Survie"; className = "Chasseur"; break;
+		case 256 : specName = "Discipline"; className = "Pretre"; break;
+		case 257 : specName = "Sacre"; className = "Pretre"; break;
+		case 258 : specName = "Ombre"; className = "Pretre"; break;
+		case 259 : specName = "Assassinat"; className = "Rogue"; break;
+		case 260 : specName = "Combat"; className = "Rogue"; break;
+		case 261 : specName = "Finesse"; className = "Rogue"; break;
+		case 262 : specName = "Elementaire"; className = "Chamane"; break;
+		case 263 : specName = "Amelioration"; className = "Chamane"; break;
+		case 264 : specName = "Restauration"; className = "Chamane"; break;
+		case 265 : specName = "Affliction"; className = "Demoniste"; break;
+		case 266 : specName = "Demonologie"; className = "Demoniste"; break;
+		case 267 : specName = "Destruction"; className = "Demoniste"; break;
+		case 268 : specName = "Maitre brasseur"; className = "Moine"; break;
+		case 269 : specName = "Marche-vent"; className = "Moine"; break;
+		case 270 : specName = "Tisse-brume"; className = "Moine"; break;
+	}
+	
+return {specName, className};
+}
+						
+// fonction déclenchée suite au choix d'une langue via combobox
+function langChosen(form) {
+	i = form.comboLangList.selectedIndex;
+	if (i == 0) {
+		return;
+	}
+
+	// selon la langue choisie, on modifie le contenu de la variable realmList
+	switch (i) {
+		case 1 : realmList = realmFr; break;
+		case 2 : realmList = realmSp; break;
+	}
+
+	realmChoice();
+} 
+				
+// affichage du contenu dans la listbox choix de serveur
+function realmChoice() {
+
+	// vide la combobox des serveurs à chaque changement de langue
+	$('#comboRealmList').empty();
+	
+	$('#comboRealmList').append("<option>-- Choisissez un serveur --</option>");
+	
+	// met dans la listbox les serveurs pour la langue selectionnée 
+    for(i=0;i<realmList.length;i++){
+    var select = document.getElementById("comboRealmList");
+	select.options[select.options.length] = new Option(realmList[i], realmList[i]);
+    }
+	
+	
+}
+
+// fonction déclenchée par la validation du choix d'un serveur (bouton valider)
+/*
+elle récupère le choix de serveur, 
+puis l'enregistre dans la variable globale "chosenRealm,
+puis supprime le contenu du tableau,
+puis remplit à nouveau le tableau (en appelant la fonction table())
+*/
+function validate(){
+// récupération de l'élément choisi dans la listbox
+	var e = document.getElementById("comboRealmList");
+// récupération du nom de l'élément choisi dans la listbox, qu'on mettra dans la variable globale "chosenRealm"
+	chosenRealm = e.options[e.selectedIndex].text;
+// si l'utilisateur valide sans choisir de serveur
+	if (chosenRealm == "-- Choisissez un serveur --"){
+		chosenRealm = null;
+	}
+// on supprime le contenu du tableau
+		$("#classements tr").remove(); 
+// on recrée le nom des colonnes du tableau
+		$('#classements').append("<tr><td>Classement</td><td>Classement EU</td><td>Cote</td><td>Nom</td><td>Serveur</td><td>Spécialisation</td><td>Classe</td></tr>");
+// on appelle la fonction de remplissage du tableau
+		table();
+}
+
+//<![CDATA[ 
+// script qui se lance dès le chargement de la page
+$(window).load(table());//]]>  
+
+// fonction de remplissage du tableau
+function table(){
+// récupérations des données de l'api blizzard
+	$.getJSON("http://eu.battle.net/api/wow/leaderboard/rbg" + "?callback=?", null, function( data ) {
+// compteur d'itérations pour obtenir le classement
+		var classement = 0;
+		
+// affichage des données récupérées dans le tableau html "classements"
+		$(data.rows).each(function() {
+			if (realmList.indexOf(this.realmName) !== -1) {
+				if (chosenRealm == null) {
+					classement++;
+					var speObj = specialisation(this.specId);
+					var output = "<tr><td>" + classement + "</td><td>" + this.ranking + "</td><td>" + this.rating + "</td><td>" + this.name+ "</td><td>"+ this.realmName +"</td><td>"+ speObj.specName +"</td><td>"+ speObj.className +"</td></tr>";
+					$('#classements').append(output);
+				}
+				else if (this.realmName == chosenRealm) {
+					classement++;
+					var speObj = specialisation(this.specId);
+					var output = "<tr><td>" + classement + "</td><td>" + this.ranking + "</td><td>" + this.rating + "</td><td>" + this.name+ "</td><td>"+ this.realmName +"</td><td>"+ speObj.specName +"</td><td>"+ speObj.className +"</td></tr>";
+					$('#classements').append(output);
+				}
+			}
+		});
+	})
+// fonctions de Jquery pour la gestion d'erreur lors de la récupérations des données de l'api
+	//.done(function() { alert('getJSON request succeeded!'); })
+	.fail(function(jqXHR, textStatus, errorThrown) { alert('getJSON request failed! ' + textStatus); })
+	//.always(function() { alert('getJSON request ended!'); });
+
+}
+
+
+
+</script>
+</head>
+
+<body onload="realmChoice();">
+
+<form>
+<select id="comboLangList" name="comboLangList" onChange="langChosen(this.form)";>
+<option>-- Choisissez une langue --</option>
+<option>-- FR --</option>
+<option>-- SP --</option>
+</select>
+
+<select id="comboRealmList" name="comboRealmList";>
+</select>
+
+<!-- -->
+
+<input type="button" name="SubmitButton" value="Valider" onClick="validate()"> 
+</form>
+
+
+<table id="classements" border="2" class="table table-hover">
+<tr><td>Classement</td><td>Classement EU</td><td>Cote</td><td>Nom</td><td>Serveur</td><td>Spécialisation</td><td>Classe</td></tr>
+</table>
+
+</body>
+</html>
