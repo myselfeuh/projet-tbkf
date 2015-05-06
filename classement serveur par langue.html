@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title> Classement RBG FR</title>
+  
+	<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js'></script>
+	<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
+
+<script type="text/javascript">
+
+// initialisation du serveur qui sera choisi via la listbox
+var chosenRealm = null;
+
+var realmList;
+
+// recensement des serveurs français
+var realmFr = new Array("Arak-arahm", "Arathi ", "Archimonde", "Chants éternels", "Cho’gall", "Confrérie du Thorium", " Conseil des Ombres", 
+						"Dalaran", "Drek'Thar", "Eitrigg", "Eldre'Thalas", "Elune", "Garona", "Hyjal", "Illidan", "Kael'thas", "Khaz Modan", "Kirin Tor", 
+						"Krasus", "La Croisade écarlate", "Les Clairvoyants", "Les Sentinelles", "Marécage de Zangar", "Medivh", "Naxxramas", "Ner’zhul", "Rashgarroth", 
+						"Sargeras", "Sinstralis", "Temple noir", "Throk'Feroth", "Uldaman", "Varimathras", "Vol'jin", "Ysondre");
+
+// recensement des serveurs espagnols
+var realmSp = new Array("C'Thun", "Colinas Pardas", "Dun Modr", "Exodar", "Los Errantes", "Minahonda", "Sanguino", "Shen'dralar", "Tyrande", "Uldum", "Zul'jin");
+						
+// fonction déclenchée suite au choix d'une langue via combobox
+function langChosen(form) {
+	i = form.langList.selectedIndex;
+	if (i == 0) {
+		return;
+	}
+
+	switch (i) {
+	//  case 0 : realmList = realmFr.concat(realmSp);
+		case 1 : realmList = realmFr; break;
+		case 2 : realmList = realmSp; break;
+	}
+
+	
+	realmChoice();
+} 
+				
+// affichage du contenu dans la listbox choix de serveur
+function realmChoice() {
+
+	//$('#realmList').refresh();
+	$('#realmList').append("<option>-- Choisissez un serveur --</option>");
+
+
+
+
+	
+
+    for(i=0;i<realmList.length;i++){
+    var select = document.getElementById("realmList");
+	select.options[select.options.length] = new Option(realmList[i], realmList[i]);
+    }
+	
+	
+}
+
+// fonction déclenchée par la validation du choix d'un serveur (bouton valider)
+/*
+elle récupère le choix de serveur, 
+puis l'enregistre dans la variable globale "chosenRealm,
+puis supprime le contenu du tableau,
+puis remplit à nouveau le tableau (en appelant la fonction table())
+*/
+function validate(){
+// récupération de l'élément choisi dans la listbox
+	var e = document.getElementById("realmList");
+// récupération du nom de l'élément choisi dans la listbox, qu'on mettra dans la variable globale "chosenRealm"
+	chosenRealm = e.options[e.selectedIndex].text;
+// si l'utilisateur valide sans choisir de serveur
+	if (chosenRealm == "-- Choisissez un serveur --"){
+		chosenRealm = null;
+	}
+// on supprime le contenu du tableau
+		$("#classements tr").remove(); 
+// on recrée le nom des colonnes du tableau
+		$('#classements').append("<tr><td>Classement</td><td>Classement EU</td><td>Cote</td><td>Nom</td><td>Serveur</td></tr>");
+// on appelle la fonction de remplissage du tableau
+		table();
+}
+
+//<![CDATA[ 
+// script qui se lance dès le chargement de la page
+$(window).load(table());//]]>  
+
+// fonction de remplissage du tableau
+function table(){
+// récupérations des données de l'api blizzard
+	$.getJSON("http://eu.battle.net/api/wow/leaderboard/rbg" + "?callback=?", null, function( data ) {
+// compteur d'itérations pour obtenir le classement
+		var classement = 0;
+		
+// affichage des données récupérées dans le tableau html "classements"
+		$(data.rows).each(function() {
+			if (realmList.indexOf(this.realmName) !== -1) {
+				if (chosenRealm == null) {
+					classement++;
+					var output = "<tr><td>" + classement + "</td><td>" + this.ranking + "</td><td>" + this.rating + "</td><td>" + this.name+ "</td><td>"+ this.realmName +"</td></tr>";
+					$('#classements').append(output);
+				}
+				else if (this.realmName == chosenRealm) {
+					classement++;
+					var output = "<tr><td>" + classement + "</td><td>" + this.ranking + "</td><td>" + this.rating + "</td><td>" + this.name+ "</td><td>"+ this.realmName +"</td></tr>";
+					$('#classements').append(output);
+				}
+			}
+		});
+	})
+// fonctions de Jquery pour la gestion d'erreur lors de la récupérations des données de l'api
+	//.done(function() { alert('getJSON request succeeded!'); })
+	.fail(function(jqXHR, textStatus, errorThrown) { alert('getJSON request failed! ' + textStatus); })
+	//.always(function() { alert('getJSON request ended!'); });
+
+}
+
+</script>
+</head>
+
+<body onload="realmChoice();">
+
+<form>
+<select id="langList" name="langList" onChange="langChosen(this.form)";>
+<option>-- Choisissez une langue --</option>
+<option>-- FR --</option>
+<option>-- SP --</option>
+</select>
+
+<select id="realmList" name="realmList";>
+</select>
+
+<!-- -->
+
+<input type="button" name="SubmitButton" value="Valider" onClick="validate()"> 
+</form>
+
+
+<table id="classements" border="2" class="table table-hover">
+<tr><td>Classement</td><td>Classement EU</td><td>Cote</td><td>Nom</td><td>Serveur</td></tr>
+</table>
+
+</body>
+</html>
