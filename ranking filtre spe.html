@@ -238,7 +238,6 @@ function table(check){
 	var c = new Array();
 	c = check;
 	
-	$('#test').append(c);
 	
 // récupérations des données de l'api blizzard
 	$.getJSON("http://eu.battle.net/api/wow/leaderboard/rbg" + "?callback=?", null, function( data ) {
@@ -255,7 +254,7 @@ function table(check){
 								classement++;
 								var speObj = specialization(this.specId);
 								var raceObj = race(this.raceId, this.genderId);
-								var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
+								var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" <a href='http://eu.battle.net/wow/fr/character/"+this.realmName+"/"+this.name+"/simple'> "+this.name+" </a></td><td>"+this.realmName +"</td></tr>";
 								$('#classements').append(output);
 							}
 						}
@@ -266,7 +265,7 @@ function table(check){
 								classement++;
 								var speObj = specialization(this.specId);
 								var raceObj = race(this.raceId, this.genderId);
-								var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
+								var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" <a href='http://eu.battle.net/wow/fr/character/"+this.realmName+"/"+this.name+"/simple'> "+this.name+" </a></td><td>"+this.realmName +"</td></tr>";
 								$('#classements').append(output);
 							}
 						}
@@ -282,14 +281,14 @@ function table(check){
 						classement++;
 						var speObj = specialization(this.specId);
 						var raceObj = race(this.raceId, this.genderId);
-						var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
+						var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" <a href='http://eu.battle.net/wow/fr/character/"+this.realmName+"/"+this.name+"/simple'> "+this.name+" </a></td><td>"+this.realmName +"</td></tr>";
 						$('#classements').append(output);
 					}
 					else if (this.realmName == chosenRealm) {
 						classement++;
 						var speObj = specialization(this.specId);
 						var raceObj = race(this.raceId, this.genderId);
-						var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
+						var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" <a href='http://eu.battle.net/wow/fr/character/"+this.realmName+"/"+this.name+"/simple'> "+this.name+" </a></td><td>"+this.realmName +"</td></tr>";
 						$('#classements').append(output);
 					}
 				}
@@ -573,9 +572,6 @@ function table(check){
 <tr><td>Classement</td><td>Classement EU</td><td>Cote</td><td>Nom</td><td>Serveur</td></tr>
 </table>
 
-
-
-<div id="test"> </div>
 
 
 </body>
