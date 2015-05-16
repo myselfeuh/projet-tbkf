@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  
   <title> Classement RBG FR</title>
   
 	<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js'></script>
@@ -11,15 +12,54 @@
 
 <script type="text/javascript">
 
+
+//<![CDATA[ 
+$(window).load(function(){
+// fonction du bouton reset checkbox
+$("#UncheckAll").click(function(){
+    $("input[type='checkbox']").prop('checked',false);
+});
+});//]]>  
+
+
+
+
+// fonction checkbox de classe pour selectionner toutes les specialisations
+$(document).ready(function(){
+    $(':checkbox.selectall').on('click', function(){
+        $(':checkbox[name="' + $(this).data('checkbox-name') + '"]').prop("checked", $(this).prop("checked"));
+    });
+    $(':checkbox.checkme').on('click', function(){
+        var _selectall = $(this).prop("checked");
+        if ( _selectall ) {
+            $( ':checkbox[name="' + $(this).attr('name') + '"]' ).each(function(i){
+                _selectall = $(this).prop("checked");
+                return _selectall;
+            });
+        }
+        $(':checkbox[name="' + $(this).data('select-all') + '"]').prop("checked", _selectall);
+    });
+});
+
+
+
+
+
+
+
+
 // affiche ou cache le filtre par spécialisation/classe selon radio button
 $(document).ready(function () {
     $('#player-spec').hide();
+    $('#UncheckAll').hide();
     $('input[type=radio][name=specType]').change(function() {
         if (this.value == 'filter') {
             $('#player-spec').show();
+			$('#UncheckAll').show();
         }
         else if (this.value == 'all') {
             $('#player-spec').hide();
+			$('#UncheckAll').hide();
         }
     });
 });
@@ -140,6 +180,23 @@ function realmChoice() {
 	
 }
 
+
+
+
+
+
+
+
+
+
+
+// fonction pour reset les checkbox
+function resetSpe(){
+
+}
+
+
+
 // fonction déclenchée par la validation du choix d'un serveur (bouton valider)
 /*
 elle récupère le choix de serveur, 
@@ -150,8 +207,10 @@ puis remplit à nouveau le tableau (en appelant la fonction table())
 function validate(){
 
 
-
-
+var tabval=new Array();
+$(":checkbox:checked").each(function(){
+   tabval.push( $(this).val() );
+});
 
 // récupération de l'élément choisi dans la listbox
 	var e = document.getElementById("comboRealmList");
@@ -166,39 +225,75 @@ function validate(){
 // on recrée le nom des colonnes du tableau
 		$('#classements').append("<tr><td>Classement</td><td>Classement EU</td><td>Cote</td><td>Nom</td><td>Serveur</td></tr>");
 // on appelle la fonction de remplissage du tableau
-		table();
+		table(tabval);
 }
 
 //<![CDATA[ 
 // script qui se lance dès le chargement de la page
-$(window).load(table());//]]>  
+$(window).load(table(null));//]]>  
 
 // fonction de remplissage du tableau
-function table(){
+function table(check){
+
+	var c = new Array();
+	c = check;
+	
 // récupérations des données de l'api blizzard
 	$.getJSON("http://eu.battle.net/api/wow/leaderboard/rbg" + "?callback=?", null, function( data ) {
 // compteur d'itérations pour obtenir le classement
 		var classement = 0;
 		
-// affichage des données récupérées dans le tableau html
-		$(data.rows).each(function() {
-			if (realmList.indexOf(this.realmName) !== -1) {
-				if (chosenRealm == null) {
-					classement++;
-					var speObj = specialization(this.specId);
-					var raceObj = race(this.raceId, this.genderId);
-					var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
-					$('#classements').append(output);
+// si checkbox spé cochée(s)
+		if ((c != null) && (c>0)){
+			$(data.rows).each(function() {
+				if (realmList.indexOf(this.realmName) !== -1) {
+					if (chosenRealm == null) {
+						for (x=0; x<c.length;x++){
+							if (this.specId == c[x]){
+								classement++;
+								var speObj = specialization(this.specId);
+								var raceObj = race(this.raceId, this.genderId);
+								var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
+								$('#classements').append(output);
+							}
+						}
+					}
+					else if (this.realmName == chosenRealm) {
+						for (x=0; x<c.length;x++){
+							if (this.specId == c[x]){
+								classement++;
+								var speObj = specialization(this.specId);
+								var raceObj = race(this.raceId, this.genderId);
+								var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
+								$('#classements').append(output);
+							}
+						}
+					}
 				}
-				else if (this.realmName == chosenRealm) {
-					classement++;
-					var speObj = specialization(this.specId);
-					var raceObj = race(this.raceId, this.genderId);
-					var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
-					$('#classements').append(output);
+			});
+		}
+		else {
+		// affichage des données récupérées dans le tableau html
+			$(data.rows).each(function() {
+				if (realmList.indexOf(this.realmName) !== -1) {
+					if (chosenRealm == null) {
+						classement++;
+						var speObj = specialization(this.specId);
+						var raceObj = race(this.raceId, this.genderId);
+						var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
+						$('#classements').append(output);
+					}
+					else if (this.realmName == chosenRealm) {
+						classement++;
+						var speObj = specialization(this.specId);
+						var raceObj = race(this.raceId, this.genderId);
+						var output = "<tr><td>"+classement+"</td><td>"+this.ranking+"</td><td>"+this.rating+"</td><td>"+raceObj+" "+speObj.classIcon+" "+speObj.specIcon+" "+this.name+"</td><td>"+this.realmName +"</td></tr>";
+						$('#classements').append(output);
+					}
 				}
-			}
-		});
+			});
+		}
+		
 	})
 // fonctions de Jquery pour la gestion d'erreur lors de la récupérations des données de l'api
 	//.done(function() { alert('getJSON request succeeded!'); })
@@ -223,10 +318,8 @@ function table(){
 
 <select id="comboRealmList" name="comboRealmList";>
 </select>
-
-
  
- </br>
+</br>
 
 <div class="filter checkbox">
 <input type="radio" name="specType" value="all" id="filter-spec-all" checked="checked" /></input>
@@ -242,224 +335,224 @@ function table(){
  <div id="player-spec" style="">
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="6" id="filter-class-6" />
+								<input type="checkbox" data-checkbox-name="dk" value="6" class="selectall" id="filter-class-6" />
 								<label for="filter-class-6" class="color-c6">Death Knight</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="250" id="filter-spec-6-1" />
+									<input type="checkbox" value="250" name="dk" class="checkme" id="filter-spec-6-1" />
 									<label for="filter-spec-6-1">Blood</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="251" id="filter-spec-6-2" />
+									<input type="checkbox" value="251" name="dk" class="checkme" id="filter-spec-6-2" />
 									<label for="filter-spec-6-2">Frost</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="252" id="filter-spec-6-3" />
+									<input type="checkbox" value="252" name="dk" class="checkme" id="filter-spec-6-3" />
 									<label for="filter-spec-6-3">Unholy</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="11" id="filter-class-11" />
+								<input type="checkbox" value="11" data-checkbox-name="drood" class="selectall" id="filter-class-11" />
 								<label for="filter-class-11" class="color-c11">Druid</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="102" id="filter-spec-11-1" />
+									<input type="checkbox" value="102" name="drood" class="checkme" id="filter-spec-11-1" />
 									<label for="filter-spec-11-1">Balance</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="103" id="filter-spec-11-2" />
+									<input type="checkbox" value="103" name="drood" class="checkme" id="filter-spec-11-2" />
 									<label for="filter-spec-11-2">Feral</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="104" id="filter-spec-11-3" />
+									<input type="checkbox" value="104" name="drood" class="checkme" id="filter-spec-11-3" />
 									<label for="filter-spec-11-3">Guardian</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="105" id="filter-spec-11-4" />
+									<input type="checkbox" value="105" name="drood" class="checkme" id="filter-spec-11-4" />
 									<label for="filter-spec-11-4">Restoration</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="3" id="filter-class-3" />
+								<input type="checkbox" value="3" data-checkbox-name="hunt" class="selectall" id="filter-class-3" />
 								<label for="filter-class-3" class="color-c3">Hunter</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="253" id="filter-spec-3-1" />
+									<input type="checkbox" value="253" name="hunt" class="checkme" id="filter-spec-3-1" />
 									<label for="filter-spec-3-1">Beast Mastery</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="254" id="filter-spec-3-2" />
+									<input type="checkbox" value="254" name="hunt" class="checkme" id="filter-spec-3-2" />
 									<label for="filter-spec-3-2">Marksmanship</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="255" id="filter-spec-3-3" />
+									<input type="checkbox" value="255" name="hunt" class="checkme" id="filter-spec-3-3" />
 									<label for="filter-spec-3-3">Survival</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="8" id="filter-class-8" />
+								<input type="checkbox" value="8" data-checkbox-name="mage" class="selectall" id="filter-class-8" />
 								<label for="filter-class-8" class="color-c8">Mage</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="62" id="filter-spec-8-1" />
+									<input type="checkbox" value="62" name="mage" class="checkme" id="filter-spec-8-1" />
 									<label for="filter-spec-8-1">Arcane</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="63" id="filter-spec-8-2" />
+									<input type="checkbox" value="63" name="mage" class="checkme" id="filter-spec-8-2" />
 									<label for="filter-spec-8-2">Fire</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="64" id="filter-spec-8-3" />
+									<input type="checkbox" value="64" name="mage" class="checkme" id="filter-spec-8-3" />
 									<label for="filter-spec-8-3">Frost</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="10" id="filter-class-10" />
+								<input type="checkbox" value="10" data-checkbox-name="monk" class="selectall" id="filter-class-10" />
 								<label for="filter-class-10" class="color-c10">Monk</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="268" id="filter-spec-10-1" />
+									<input type="checkbox" value="268" name="monk" class="checkme" id="filter-spec-10-1" />
 									<label for="filter-spec-10-1">Brewmaster</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="269" id="filter-spec-10-2" />
+									<input type="checkbox" value="269" name="monk" class="checkme" id="filter-spec-10-2" />
 									<label for="filter-spec-10-2">Mistweaver</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="270" id="filter-spec-10-3" />
+									<input type="checkbox" value="270" name="monk" class="checkme" id="filter-spec-10-3" />
 									<label for="filter-spec-10-3">Windwalker</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="2" id="filter-class-2" />
+								<input type="checkbox" value="2" data-checkbox-name="pal" class="selectall" id="filter-class-2" />
 								<label for="filter-class-2" class="color-c2">Paladin</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="65" id="filter-spec-2-1" />
+									<input type="checkbox" value="65" name="pal" class="checkme" id="filter-spec-2-1" />
 									<label for="filter-spec-2-1">Holy</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="66" id="filter-spec-2-2" />
+									<input type="checkbox" value="66" name="pal" class="checkme" id="filter-spec-2-2" />
 									<label for="filter-spec-2-2">Protection</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="70" id="filter-spec-2-3" />
+									<input type="checkbox" value="70" name="pal" class="checkme" id="filter-spec-2-3" />
 									<label for="filter-spec-2-3">Retribution</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="5" id="filter-class-5" />
+								<input type="checkbox" value="5" data-checkbox-name="priest" class="selectall" id="filter-class-5" />
 								<label for="filter-class-5" class="color-c5">Priest</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="256" id="filter-spec-5-1" />
+									<input type="checkbox" value="256" name="priest" class="checkme" id="filter-spec-5-1" />
 									<label for="filter-spec-5-1">Discipline</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="257" id="filter-spec-5-2" />
+									<input type="checkbox" value="257" name="priest" class="checkme" id="filter-spec-5-2" />
 									<label for="filter-spec-5-2">Holy</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="258" id="filter-spec-5-3" />
+									<input type="checkbox" value="258" name="priest" class="checkme" id="filter-spec-5-3" />
 									<label for="filter-spec-5-3">Shadow</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="4" id="filter-class-4" />
+								<input type="checkbox" value="4" data-checkbox-name="rogue" class="selectall" id="filter-class-4" />
 								<label for="filter-class-4" class="color-c4">Rogue</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="259" id="filter-spec-4-1" />
+									<input type="checkbox" value="259" name="rogue" class="checkme" id="filter-spec-4-1" />
 									<label for="filter-spec-4-1">Assassination</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="260" id="filter-spec-4-2" />
+									<input type="checkbox" value="260" name="rogue" class="checkme" id="filter-spec-4-2" />
 									<label for="filter-spec-4-2">Combat</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="261" id="filter-spec-4-3" />
+									<input type="checkbox" value="261" name="rogue" class="checkme" id="filter-spec-4-3" />
 									<label for="filter-spec-4-3">Subtlety</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="7" id="filter-class-7" />
+								<input type="checkbox" value="7" data-checkbox-name="sham" class="selectall" id="filter-class-7" />
 								<label for="filter-class-7" class="color-c7">Shaman</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="262" id="filter-spec-7-1" />
+									<input type="checkbox" value="262" name="sham" class="checkme" id="filter-spec-7-1" />
 									<label for="filter-spec-7-1">Elemental</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="263" id="filter-spec-7-2" />
+									<input type="checkbox" value="263" name="sham" class="checkme" id="filter-spec-7-2" />
 									<label for="filter-spec-7-2">Enhancement</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="264" id="filter-spec-7-3" />
+									<input type="checkbox" value="264" name="sham" class="checkme" id="filter-spec-7-3" />
 									<label for="filter-spec-7-3">Restoration</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="9" id="filter-class-9" />
+								<input type="checkbox" value="9" data-checkbox-name="lock" class="selectall" id="filter-class-9" />
 								<label for="filter-class-9" class="color-c9">Warlock</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="265" id="filter-spec-9-1" />
+									<input type="checkbox" value="265" name="lock" class="checkme" id="filter-spec-9-1" />
 									<label for="filter-spec-9-1">Affliction</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="266" id="filter-spec-9-2" />
+									<input type="checkbox" value="266" name="lock" class="checkme" id="filter-spec-9-2" />
 									<label for="filter-spec-9-2">Demonology</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="267" id="filter-spec-9-3" />
+									<input type="checkbox" value="267" name="lock" class="checkme" id="filter-spec-9-3" />
 									<label for="filter-spec-9-3">Destruction</label>
 								</div>
 						</div>
 						
 						<div class="filter class-spec">
 							<div class="all-spec">
-								<input type="checkbox" value="1" id="filter-class-1" />
+								<input type="checkbox" value="1" data-checkbox-name="war" class="selectall" id="filter-class-1" />
 								<label for="filter-class-1" class="color-c1">Warrior</label><br />
 							</div>
 
 								<div class="spec">
-									<input type="checkbox" value="71" id="filter-spec-1-1" />
+									<input type="checkbox" value="71" name="war" class="checkme" id="filter-spec-1-1" />
 									<label for="filter-spec-1-1">Arms</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="72" id="filter-spec-1-2" />
+									<input type="checkbox" value="72" name="war" class="checkme" id="filter-spec-1-2" />
 									<label for="filter-spec-1-2">Fury</label>
 								</div>
 								<div class="spec">
-									<input type="checkbox" value="73" id="filter-spec-1-3" />
+									<input type="checkbox" value="73" name="war" class="checkme" id="filter-spec-1-3" />
 									<label for="filter-spec-1-3">Protection</label>
 								</div>
 						</div>
@@ -469,12 +562,19 @@ function table(){
  
 
 <input type="button" name="SubmitButton" value="Valider" onClick="validate()"> 
+<input type="button" id="UncheckAll" value="Tout d&eacute;cocher" />
+
 </form>
 
 
 <table id="classements" border="2" class="table table-hover">
 <tr><td>Classement</td><td>Classement EU</td><td>Cote</td><td>Nom</td><td>Serveur</td></tr>
 </table>
+
+
+
+
+
 
 </body>
 </html>
