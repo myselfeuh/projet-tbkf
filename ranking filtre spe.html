@@ -238,13 +238,15 @@ function table(check){
 	var c = new Array();
 	c = check;
 	
+	$('#test').append(c);
+	
 // récupérations des données de l'api blizzard
 	$.getJSON("http://eu.battle.net/api/wow/leaderboard/rbg" + "?callback=?", null, function( data ) {
 // compteur d'itérations pour obtenir le classement
 		var classement = 0;
 		
 // si checkbox spé cochée(s)
-		if ((c != null) && (c>0)){
+		if (c.length){
 			$(data.rows).each(function() {
 				if (realmList.indexOf(this.realmName) !== -1) {
 					if (chosenRealm == null) {
@@ -573,7 +575,7 @@ function table(check){
 
 
 
-
+<div id="test"> </div>
 
 
 </body>
